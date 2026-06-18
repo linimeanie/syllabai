@@ -17,9 +17,18 @@ import {
   Trophy,
   Play,
   RotateCcw,
+  Target,
+  ArrowRight,
 } from "lucide-react";
 
-type Tab = "curriculum" | "lesson" | "practice" | "flashcards" | "schedule" | "exam";
+type Tab =
+  | "curriculum"
+  | "lesson"
+  | "practice"
+  | "trainer"
+  | "flashcards"
+  | "schedule"
+  | "exam";
 
 export default function CourseView({ course }: { course: Course }) {
   const [tab, setTab] = useState<Tab>("curriculum");
@@ -40,6 +49,7 @@ export default function CourseView({ course }: { course: Course }) {
     { id: "schedule", label: "Schedule", icon: <CalendarDays size={16} /> },
     { id: "lesson", label: "Sample lesson", icon: <BookOpen size={16} /> },
     { id: "practice", label: `Practice (${sample?.practiceQuestions?.length ?? 0})`, icon: <ListChecks size={16} /> },
+    { id: "trainer", label: "Adaptive trainer", icon: <Target size={16} /> },
     { id: "flashcards", label: `Flashcards (${sample?.flashcards?.length ?? 0})`, icon: <GraduationCap size={16} /> },
     { id: "exam", label: "Exam simulation", icon: <Timer size={16} /> },
   ];
@@ -94,6 +104,7 @@ export default function CourseView({ course }: { course: Course }) {
         {tab === "schedule" && <Schedule course={course} />}
         {tab === "lesson" && <SampleLesson lesson={sample} />}
         {tab === "practice" && <Practice lesson={sample} />}
+        {tab === "trainer" && <AdaptiveTrainer pool={examPool} />}
         {tab === "flashcards" && <Flashcards lesson={sample} />}
         {tab === "exam" && <ExamSimulation pool={examPool} examName={course.examName} />}
       </div>
@@ -529,6 +540,153 @@ function ExamSimulation({ pool, examName }: { pool: PracticeQuestion[]; examName
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Adaptive trainer ----------
+// Session-based adaptive practice: questions you miss come back sooner and more
+// often; a question is "mastered" only after two correct answers in a row.
+
+const MASTERY_STREAK = 2;
+
+function AdaptiveTrainer({ pool }: { pool: PracticeQuestion[] }) {
+  const total = pool.length;
+  const [queue, setQueue] = useState<number[]>([]);
+  const [streaks, setStreaks] = useState<Record<number, number>>({});
+  const [mastered, setMastered] = useState<number>(0);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [seen, setSeen] = useState<number>(0);
+
+  const restart = useCallback(() => {
+    setQueue(shuffle(pool.map((_, i) => i)));
+    setStreaks({});
+    setMastered(0);
+    setPicked(null);
+    setSeen(0);
+  }, [pool]);
+
+  useEffect(() => {
+    restart();
+  }, [restart]);
+
+  if (total === 0) return <Empty text="No questions available to train on yet." />;
+
+  const done = queue.length === 0 && seen > 0;
+
+  if (done) {
+    return (
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center">
+        <Trophy size={32} className="text-emerald-600 mx-auto" />
+        <h3 className="text-lg font-bold text-stone-900 mt-3">All {total} questions mastered 🎉</h3>
+        <p className="text-stone-600 mt-2 text-sm">
+          You answered each question correctly {MASTERY_STREAK}× in a row.
+        </p>
+        <button
+          onClick={restart}
+          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-50"
+        >
+          <RotateCcw size={15} /> Train again
+        </button>
+      </div>
+    );
+  }
+
+  const cur = queue[0];
+  const q = pool[cur];
+  const answered = picked !== null;
+  const isCorrect = picked === q.correctIndex;
+
+  function next() {
+    const correct = picked === q.correctIndex;
+    const newStreak = correct ? (streaks[cur] ?? 0) + 1 : 0;
+    setStreaks((s) => ({ ...s, [cur]: newStreak }));
+    setSeen((n) => n + 1);
+
+    let rest = queue.slice(1);
+    if (correct && newStreak >= MASTERY_STREAK) {
+      setMastered((m) => m + 1); // retired — not requeued
+    } else if (correct) {
+      rest = [...rest, cur]; // back of the line
+    } else {
+      const pos = Math.min(3, rest.length); // missed → comes back soon
+      rest = [...rest.slice(0, pos), cur, ...rest.slice(pos)];
+    }
+    setQueue(rest);
+    setPicked(null);
+  }
+
+  const pct = Math.round((mastered / total) * 100);
+
+  return (
+    <div>
+      {/* Mastery progress */}
+      <div className="rounded-xl border border-stone-200 bg-white px-5 py-4 mb-4">
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="inline-flex items-center gap-1.5 text-stone-600">
+            <Target size={15} className="text-sky-600" /> Mastery
+          </span>
+          <span className="font-medium text-stone-800">
+            {mastered}/{total} mastered · {queue.length} in rotation
+          </span>
+        </div>
+        <div className="h-2 rounded-full bg-stone-100 overflow-hidden">
+          <div
+            className="h-full bg-emerald-500 transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <p className="text-xs text-stone-400 mt-2">
+          Questions you miss reappear sooner; each needs {MASTERY_STREAK} correct in a row to retire.
+        </p>
+      </div>
+
+      {/* Current question */}
+      <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <div className="font-medium text-stone-900">{q.question}</div>
+        <div className="mt-3 space-y-2">
+          {q.options.map((opt, oi) => {
+            const show = answered && (oi === picked || oi === q.correctIndex);
+            return (
+              <button
+                key={oi}
+                disabled={answered}
+                onClick={() => setPicked(oi)}
+                className={`w-full text-left rounded-lg border px-4 py-2.5 text-sm flex items-center justify-between transition ${
+                  show
+                    ? oi === q.correctIndex
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                      : "border-red-300 bg-red-50 text-red-900"
+                    : "border-stone-200 hover:border-sky-300 hover:bg-sky-50/50"
+                }`}
+              >
+                <span>
+                  <span className="text-stone-400 mr-2">{String.fromCharCode(97 + oi)})</span>
+                  {opt}
+                </span>
+                {show && oi === q.correctIndex && <CheckCircle2 size={18} className="text-emerald-600" />}
+                {show && oi === picked && oi !== q.correctIndex && (
+                  <XCircle size={18} className="text-red-500" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {answered && (
+          <>
+            <div className="mt-3 rounded-lg bg-stone-50 border border-stone-200 p-3 text-sm text-stone-700">
+              <span className="font-semibold">{isCorrect ? "Richtig! " : "Erklärung: "}</span>
+              {q.explanation}
+            </div>
+            <button
+              onClick={next}
+              className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 text-white px-5 py-3 font-medium hover:bg-sky-700"
+            >
+              Next question <ArrowRight size={16} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

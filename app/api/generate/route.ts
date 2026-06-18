@@ -38,7 +38,8 @@ export async function POST(req: NextRequest) {
   try {
     const { text, niche } = await extractText(req);
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    const hasKey = !!(process.env.GROQ_API_KEY || process.env.ANTHROPIC_API_KEY);
+    if (!hasKey) {
       // Live-link fallback: always return a believable course.
       return NextResponse.json({ course: DEMO_COURSE, demo: true });
     }

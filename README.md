@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Syllabai
 
-## Getting Started
+**From exam syllabus to a complete course in minutes.**
 
-First, run the development server:
+AI-native curriculum software & marketplace for regulated niche exams (sailing licence, security-guard §34a, pilot theory, trades, care work). Built as an MVP for the "go-niche, AI-native tes.com" case. Beachhead niche: **Sportbootführerschein (SBF) Binnen**.
+
+## What it does
+
+1. **Upload / paste** an official exam question catalog (PDF, .txt, or pasted text).
+2. The **AI engine** turns it into a structured course: modules → lessons → learning objectives, plus one fully written **sample lesson**, **10 practice questions** with explanations, and **flashcards**.
+3. A **marketplace** mockup shows how schools package and sell those courses (80% creator / 20% platform).
+
+The generation engine is **niche-agnostic** — the same pipeline works on any closed exam catalog.
+
+## Tech
+
+- Next.js 14 (App Router) + TypeScript + Tailwind
+- Anthropic Claude (`claude-sonnet-4-6`) via tool-use for structured output
+- `unpdf` for serverless PDF text extraction
+- Deploys to Vercel as-is
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then paste your key into .env.local (optional)
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Without an API key the app still works** — it serves a baked-in SBF Binnen sample course, so the live link never looks broken. Add a key to generate live from any uploaded syllabus.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Get a key at https://console.anthropic.com → set `ANTHROPIC_API_KEY`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy to Vercel
 
-## Learn More
+1. Push this repo to GitHub.
+2. On [vercel.com](https://vercel.com): **Add New → Project → import the repo**.
+3. (Optional) Add environment variable `ANTHROPIC_API_KEY` in project settings.
+4. Deploy. You get a live `https://….vercel.app` link.
 
-To learn more about Next.js, take a look at the following resources:
+## Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/page.tsx              Generator (input → result)
+app/marketplace/page.tsx  Marketplace listing mockup
+app/api/generate/route.ts API: parse syllabus → Claude → structured course (demo fallback)
+lib/generate.ts           Claude prompt + forced-JSON tool schema
+lib/demo.ts               Baked-in SBF sample course
+lib/sampleSyllabus.ts     ELWIS-style sample input for the "Load sample" button
+components/CourseView.tsx  Tabbed course viewer (curriculum / lesson / practice / flashcards)
+```

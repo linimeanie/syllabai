@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Syllabai — From exam syllabus to a complete course in minutes",
+  title: "Guildly — From exam syllabus to a complete course in minutes",
   description:
     "AI-native curriculum software & marketplace for regulated niche exams. Upload an exam syllabus and get a structured course, lessons and practice questions automatically.",
 };

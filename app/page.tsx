@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getSample } from "@/lib/sampleSyllabus";
 import type { Course } from "@/lib/types";
 import CourseView from "@/components/CourseView";
-import { Upload, Wand2, FileText, Loader2, Ship, Store, RotateCcw } from "lucide-react";
+import { Upload, Wand2, FileText, Loader2, Library, Store, RotateCcw } from "lucide-react";
 
 const OTHER = "Other — type your own…";
 const NICHES = [
@@ -65,8 +65,8 @@ export default function Home() {
       <header className="border-b border-stone-200 bg-white/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-stone-900 text-lg">
-            <Ship size={22} className="text-sky-600" />
-            Syllabai
+            <Library size={22} className="text-sky-600" />
+            Guildly
           </div>
           <Link
             href="/marketplace"
@@ -234,7 +234,7 @@ export default function Home() {
       </div>
 
       <footer className="border-t border-stone-200 py-8 text-center text-sm text-stone-400">
-        Syllabai — AI curriculum software & marketplace for niche exams · Demo built with Claude
+        Guildly — AI curriculum software & marketplace for niche exams · Demo built with Claude
       </footer>
     </main>
   );

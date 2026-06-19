@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SAMPLE_SYLLABUS } from "@/lib/sampleSyllabus";
+import { getSample } from "@/lib/sampleSyllabus";
 import type { Course } from "@/lib/types";
 import CourseView from "@/components/CourseView";
 import { Upload, Wand2, FileText, Loader2, Ship, Store, RotateCcw } from "lucide-react";
@@ -152,13 +152,13 @@ export default function Home() {
                 )}
                 <button
                   onClick={() => {
-                    setText(SAMPLE_SYLLABUS);
+                    setText(getSample(niche === OTHER ? customNiche : niche));
                     setFile(null);
                     setFileName(null);
                   }}
                   className="text-sm text-sky-700 hover:underline ml-auto"
                 >
-                  Load sample (SBF Binnen)
+                  Load sample syllabus
                 </button>
               </div>
 

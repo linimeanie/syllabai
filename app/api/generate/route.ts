@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateCourse } from "@/lib/generate";
-import { DEMO_COURSE } from "@/lib/demo";
+import { getDemoCourse } from "@/lib/demo";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const hasKey = !!(process.env.GROQ_API_KEY || process.env.ANTHROPIC_API_KEY);
     if (!hasKey) {
       // Live-link fallback: always return a believable course.
-      return NextResponse.json({ course: DEMO_COURSE, demo: true });
+      return NextResponse.json({ course: getDemoCourse(niche), demo: true });
     }
 
     if (!text || text.trim().length < 30) {
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Generation failed.";
     if (message === "NO_API_KEY") {
-      return NextResponse.json({ course: DEMO_COURSE, demo: true });
+      return NextResponse.json({ course: getDemoCourse(), demo: true });
     }
     console.error("generate error:", err);
     return NextResponse.json(

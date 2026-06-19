@@ -77,7 +77,7 @@ export default function Marketplace() {
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-stone-900 text-lg">
             <Library size={22} className="text-sky-600" />
-            Guildly
+            Syllabai
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900">
             <ArrowLeft size={16} /> Back to generator
@@ -90,7 +90,7 @@ export default function Marketplace() {
           <div>
             <h1 className="text-3xl font-bold text-stone-900">Marketplace</h1>
             <p className="text-stone-600 mt-1.5">
-              Courses created on Guildly, sold by schools and trainers across regulated niches.
+              Courses created on Syllabai, sold by schools and trainers across regulated niches.
             </p>
           </div>
           <div className="flex gap-2 text-sm">

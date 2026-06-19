@@ -66,7 +66,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-stone-900 text-lg">
             <Library size={22} className="text-sky-600" />
-            Guildly
+            Syllabai
           </div>
           <Link
             href="/marketplace"
@@ -234,7 +234,7 @@ export default function Home() {
       </div>
 
       <footer className="border-t border-stone-200 py-8 text-center text-sm text-stone-400">
-        Guildly — AI curriculum software & marketplace for niche exams · Demo built with Claude
+        Syllabai — AI curriculum software & marketplace for niche exams · Demo built with Claude
       </footer>
     </main>
   );
